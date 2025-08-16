@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Control de Hayacas</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Poppins', sans-serif; }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-red-50 to-green-50 min-h-screen">
+    <div class="container mx-auto px-4 py-6 max-w-md">
+        <!-- Header -->
+        <div class="text-center mb-6">
+            <h1 class="text-3xl font-bold text-green-800 mb-2">🫔 Control de Hayacas</h1>
+            <p class="text-gray-600">Gestiona tus ventas fácilmente</p>
+        </div>
+
+        <!-- Resumen -->
+        <div class="bg-white rounded-2xl shadow-lg p-6 mb-6">
+            <h2 class="text-xl font-semibold text-gray-800 mb-4">📊 Resumen</h2>
+            <div class="grid grid-cols-2 gap-4">
+                <div class="bg-blue-50 rounded-xl p-4 text-center">
+                    <div class="text-2xl font-bold text-blue-600" id="totalHayacas">0</div>
+                    <div class="text-sm text-blue-500">Total Hayacas</div>
+                </div>
+                <div class="bg-green-50 rounded-xl p-4 text-center">
+                    <div class="text-2xl font-bold text-green-600" id="totalDinero">$0</div>
+                    <div class="text-sm text-green-500">Total Dinero</div>
+                </div>
+                <div class="bg-yellow-50 rounded-xl p-4 text-center">
+                    <div class="text-2xl font-bold text-yellow-600" id="entregadas">0</div>
+                    <div class="text-sm text-yellow-500">Entregadas</div>
+                </div>
+                <div class="bg-red-50 rounded-xl p-4 text-center">
+                    <div class="text-2xl font-bold text-red-600" id="pendientes">0</div>
+                    <div class="text-sm text-red-500">Pendientes</div>
+                </div>
+            </div>
+            <div class="grid grid-cols-2 gap-4 mt-4">
+                <div class="bg-purple-50 rounded-xl p-4 text-center">
+                    <div class="text-2xl font-bold text-purple-600" id="totalAbonos">$0</div>
+                    <div class="text-sm text-purple-500">Total Abonos</div>
+                </div>
+                <div class="bg-orange-50 rounded-xl p-4 text-center">
+                    <div class="text-2xl font-bold text-orange-600" id="saldoPendiente">$0</div>
+                    <div class="text-sm text-orange-500">Saldo Pendiente</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Formulario -->
+        <div class="bg-white rounded-2xl shadow-lg p-6 mb-6">
+            <h2 class="text-xl font-semibold text-gray-800 mb-4">➕ Nueva Venta</h2>
+            <form id="hayacaForm" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">👤 Cliente</label>
+                    <input type="text" id="cliente" required class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent" placeholder="Nombre del cliente">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">🫔 Cantidad de Hayacas</label>
+                    <input type="number" id="cantidad" required min="1" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent" placeholder="Ej: 12">
+                </div>
+                <div class="flex items-center space-x-2">
+                    <input type="checkbox" id="entregado" class="w-5 h-5 text-green-600 rounded focus:ring-green-500">
+                    <label for="entregado" class="text-sm font-medium text-gray-700">✅ Ya entregado</label>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <input type="checkbox" id="pagado" class="w-5 h-5 text-green-600 rounded focus:ring-green-500">
+                    <label for="pagado" class="text-sm font-medium text-gray-700">💰 Ya pagado</label>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">💵 Abono inicial (opcional)</label>
+                    <input type="number" id="abono" min="0" step="1000" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent" placeholder="Ej: 12000">
+                </div>
+                <button type="submit" class="w-full bg-gradient-to-r from-green-500 to-green-600 text-white font-semibold py-3 px-6 rounded-xl hover:from-green-600 hover:to-green-700 transition duration-200 shadow-lg">
+                    Agregar Venta
+                </button>
+            </form>
+        </div>
+
+        <!-- Lista de Ventas -->
+        <div class="bg-white rounded-2xl shadow-lg p-6">
+            <h2 class="text-xl font-semibold text-gray-800 mb-4">📋 Registro de Ventas</h2>
+            <div id="listaVentas" class="space-y-3">
+                <div class="text-center text-gray-500 py-8">
+                    No hay ventas registradas aún
+                </div>
+            </div>
+        </div>
+
+        <!-- Sistema de Respaldo -->
+        <div class="bg-white rounded-2xl shadow-lg p-6 mt-6">
+            <h2 class="text-xl font-semibold text-gray-800 mb-4">💾 Copias de Seguridad</h2>
+            <div class="space-y-3">
+                <button onclick="descargarRespaldo()" class="w-full bg-blue-500 text-white font-semibold py-3 px-6 rounded-xl hover:bg-blue-600 transition duration-200 shadow-lg">
+                    📥 Descargar Copia de Seguridad
+                </button>
+                <div class="relative">
+                    <input type="file" id="archivoRespaldo" accept=".json" class="hidden" onchange="cargarRespaldo(event)">
+                    <button onclick="document.getElementById('archivoRespaldo').click()" class="w-full bg-green-500 text-white font-semibold py-3 px-6 rounded-xl hover:bg-green-600 transition duration-200 shadow-lg">
+                        📤 Cargar Copia de Seguridad
+                    </button>
+                </div>
+                <div class="text-xs text-gray-500 text-center mt-2">
+                    Guardado automático activado ✅
+                </div>
+            </div>
+        </div>
+
+        <!-- Botón para limpiar datos -->
+        <div class="mt-6 text-center">
+            <button onclick="limpiarDatos()" class="bg-red-500 text-white px-6 py-2 rounded-xl hover:bg-red-600 transition duration-200">
+                🗑️ Limpiar Todo
+            </button>
+        </div>
+    </div>
+
+    <script>
+        const PRECIO_HAYACA = 6000;
+        let ventas = JSON.parse(localStorage.getItem('hayacasVentas')) || [];
+
+        function formatearPrecio(precio) {
+            return new Intl.NumberFormat('es-CO', {
+                style: 'currency',
+                currency: 'COP',
+                minimumFractionDigits: 0
+            }).format(precio);
+        }
+
+        function actualizarResumen() {
+            const totalHayacas = ventas.reduce((sum, venta) => sum + venta.cantidad, 0);
+            const totalDinero = totalHayacas * PRECIO_HAYACA;
+            const entregadas = ventas.filter(venta => venta.entregado).reduce((sum, venta) => sum + venta.cantidad, 0);
+            const pendientes = totalHayacas - entregadas;
+            const totalAbonos = ventas.reduce((sum, venta) => sum + (venta.abonos || []).reduce((abonoSum, abono) => abonoSum + abono.monto, 0), 0);
+            const saldoPendiente = totalDinero - totalAbonos;
+
+            document.getElementById('totalHayacas').textContent = totalHayacas;
+            document.getElementById('totalDinero').textContent = formatearPrecio(totalDinero);
+            document.getElementById('entregadas').textContent = entregadas;
+            document.getElementById('pendientes').textContent = pendientes;
+            document.getElementById('totalAbonos').textContent = formatearPrecio(totalAbonos);
+            document.getElementById('saldoPendiente').textContent = formatearPrecio(saldoPendiente);
+        }
+
+        function mostrarVentas() {
+            const lista = document.getElementById('listaVentas');
+            
+            if (ventas.length === 0) {
+                lista.innerHTML = '<div class="text-center text-gray-500 py-8">No hay ventas registradas aún</div>';
+                return;
+            }
+
+            lista.innerHTML = ventas.map((venta, index) => {
+                const totalVenta = venta.cantidad * PRECIO_HAYACA;
+                const totalAbonado = (venta.abonos || []).reduce((sum, abono) => sum + abono.monto, 0);
+                const saldoPendiente = totalVenta - totalAbonado;
+                
+                return `
+                <div class="border border-gray-200 rounded-xl p-4 ${venta.entregado ? 'bg-green-50' : 'bg-yellow-50'}">
+                    <div class="flex justify-between items-start mb-2">
+                        <div>
+                            <h3 class="font-semibold text-gray-800">${venta.cliente}</h3>
+                            <p class="text-sm text-gray-600">${venta.cantidad} hayacas - ${formatearPrecio(totalVenta)}</p>
+                            ${totalAbonado > 0 ? `<p class="text-xs text-purple-600">Abonado: ${formatearPrecio(totalAbonado)} | Saldo: ${formatearPrecio(saldoPendiente)}</p>` : ''}
+                        </div>
+                        <button onclick="eliminarVenta(${index})" class="text-red-500 hover:text-red-700 text-sm">
+                            🗑️
+                        </button>
+                    </div>
+                    <div class="flex justify-between items-center mb-2">
+                        <div class="flex space-x-4">
+                            <label class="flex items-center space-x-1 text-sm">
+                                <input type="checkbox" ${venta.entregado ? 'checked' : ''} 
+                                       onchange="toggleEntregado(${index})" 
+                                       class="w-4 h-4 text-green-600 rounded">
+                                <span class="${venta.entregado ? 'text-green-600' : 'text-gray-500'}">Entregado</span>
+                            </label>
+                            <label class="flex items-center space-x-1 text-sm">
+                                <input type="checkbox" ${venta.pagado ? 'checked' : ''} 
+                                       onchange="togglePagado(${index})" 
+                                       class="w-4 h-4 text-green-600 rounded">
+                                <span class="${venta.pagado ? 'text-green-600' : 'text-gray-500'}">Pagado</span>
+                            </label>
+                        </div>
+                        <div class="text-xs text-gray-400">
+                            ${new Date(venta.fecha).toLocaleDateString()}
+                        </div>
+                    </div>
+                    ${!venta.pagado && saldoPendiente > 0 ? `
+                    <div class="flex space-x-2 mt-2">
+                        <input type="number" id="nuevoAbono${index}" min="1000" step="1000" max="${saldoPendiente}" 
+                               placeholder="Monto abono" 
+                               class="flex-1 px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500">
+                        <button onclick="agregarAbono(${index})" 
+                                class="bg-purple-500 text-white px-4 py-2 rounded-lg hover:bg-purple-600 text-sm">
+                            💵 Abonar
+                        </button>
+                    </div>
+                    ` : ''}
+                    ${(venta.abonos || []).length > 0 ? `
+                    <div class="mt-2 pt-2 border-t border-gray-200">
+                        <p class="text-xs font-medium text-gray-600 mb-1">Historial de abonos:</p>
+                        ${(venta.abonos || []).map(abono => `
+                            <div class="text-xs text-gray-500 flex justify-between">
+                                <span>${formatearPrecio(abono.monto)}</span>
+                                <span>${new Date(abono.fecha).toLocaleDateString()}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                    ` : ''}
+                </div>
+                `;
+            }).join('');
+        }
+
+        function toggleEntregado(index) {
+            ventas[index].entregado = !ventas[index].entregado;
+            guardarDatos();
+            actualizarResumen();
+            mostrarVentas();
+        }
+
+        function togglePagado(index) {
+            ventas[index].pagado = !ventas[index].pagado;
+            guardarDatos();
+            mostrarVentas();
+        }
+
+        function agregarAbono(index) {
+            const montoInput = document.getElementById(`nuevoAbono${index}`);
+            const monto = parseInt(montoInput.value);
+            
+            if (!monto || monto <= 0) {
+                alert('Por favor ingresa un monto válido');
+                return;
+            }
+
+            const totalVenta = ventas[index].cantidad * PRECIO_HAYACA;
+            const totalAbonado = (ventas[index].abonos || []).reduce((sum, abono) => sum + abono.monto, 0);
+            const saldoPendiente = totalVenta - totalAbonado;
+
+            if (monto > saldoPendiente) {
+                alert(`El abono no puede ser mayor al saldo pendiente: ${formatearPrecio(saldoPendiente)}`);
+                return;
+            }
+
+            if (!ventas[index].abonos) {
+                ventas[index].abonos = [];
+            }
+
+            ventas[index].abonos.push({
+                monto: monto,
+                fecha: new Date().toISOString()
+            });
+
+            // Si el abono completa el pago, marcar como pagado
+            const nuevoTotalAbonado = totalAbonado + monto;
+            if (nuevoTotalAbonado >= totalVenta) {
+                ventas[index].pagado = true;
+            }
+
+            guardarDatos();
+            actualizarResumen();
+            mostrarVentas();
+            
+            alert(`✅ Abono de ${formatearPrecio(monto)} registrado exitosamente`);
+        }
+
+        function eliminarVenta(index) {
+            if (confirm('¿Estás seguro de eliminar esta venta?')) {
+                ventas.splice(index, 1);
+                guardarDatos();
+                actualizarResumen();
+                mostrarVentas();
+            }
+        }
+
+        function guardarDatos() {
+            localStorage.setItem('hayacasVentas', JSON.stringify(ventas));
+        }
+
+        function limpiarDatos() {
+            if (confirm('¿Estás seguro de eliminar todos los datos? Esta acción no se puede deshacer.')) {
+                ventas = [];
+                guardarDatos();
+                actualizarResumen();
+                mostrarVentas();
+            }
+        }
+
+        function descargarRespaldo() {
+            const fechaActual = new Date().toISOString().split('T')[0];
+            const datos = {
+                fecha: new Date().toISOString(),
+                version: "1.0",
+                ventas: ventas,
+                resumen: {
+                    totalHayacas: ventas.reduce((sum, venta) => sum + venta.cantidad, 0),
+                    totalDinero: ventas.reduce((sum, venta) => sum + venta.cantidad, 0) * PRECIO_HAYACA
+                }
+            };
+
+            const blob = new Blob([JSON.stringify(datos, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `hayacas-respaldo-${fechaActual}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+
+            // Mostrar confirmación
+            alert('✅ Copia de seguridad descargada exitosamente');
+        }
+
+        function cargarRespaldo(event) {
+            const archivo = event.target.files[0];
+            if (!archivo) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const datos = JSON.parse(e.target.result);
+                    
+                    // Validar estructura del archivo
+                    if (!datos.ventas || !Array.isArray(datos.ventas)) {
+                        throw new Error('Formato de archivo inválido');
+                    }
+
+                    // Confirmar carga
+                    const totalVentas = datos.ventas.length;
+                    const fechaRespaldo = datos.fecha ? new Date(datos.fecha).toLocaleDateString() : 'Desconocida';
+                    
+                    if (confirm(`¿Cargar copia de seguridad?\n\nFecha: ${fechaRespaldo}\nVentas: ${totalVentas}\n\n⚠️ Esto reemplazará todos los datos actuales`)) {
+                        ventas = datos.ventas;
+                        guardarDatos();
+                        actualizarResumen();
+                        mostrarVentas();
+                        alert('✅ Copia de seguridad cargada exitosamente');
+                    }
+                } catch (error) {
+                    alert('❌ Error al cargar el archivo. Verifica que sea una copia de seguridad válida.');
+                    console.error('Error:', error);
+                }
+            };
+            reader.readAsText(archivo);
+            
+            // Limpiar input para permitir cargar el mismo archivo nuevamente
+            event.target.value = '';
+        }
+
+        document.getElementById('hayacaForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const cliente = document.getElementById('cliente').value;
+            const cantidad = parseInt(document.getElementById('cantidad').value);
+            const entregado = document.getElementById('entregado').checked;
+            const pagado = document.getElementById('pagado').checked;
+            const abonoInicial = parseInt(document.getElementById('abono').value) || 0;
+
+            const nuevaVenta = {
+                cliente,
+                cantidad,
+                entregado,
+                pagado,
+                fecha: new Date().toISOString(),
+                abonos: abonoInicial > 0 ? [{
+                    monto: abonoInicial,
+                    fecha: new Date().toISOString()
+                }] : []
+            };
+
+            ventas.push(nuevaVenta);
+            guardarDatos();
+            actualizarResumen();
+            mostrarVentas();
+
+            // Limpiar formulario
+            this.reset();
+        });
+
+        // Inicializar la aplicación
+        actualizarResumen();
+        mostrarVentas();
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'968fc0ea93bcaf80',t:'MTc1NDE2MDU0OS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
